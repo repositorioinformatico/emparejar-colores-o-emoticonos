@@ -13,7 +13,7 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #2c2c2c 0%, #1a1a1a 100%);
             min-height: 100vh;
             padding: 20px;
         }
@@ -82,7 +82,8 @@
         }
 
         .player-name {
-            color: #667eea;
+            color: #000;
+            font-weight: bold;
         }
 
         /* Grid */
@@ -98,7 +99,7 @@
             display: inline-block;
             width: 80px;
             height: 80px;
-            border: 2px solid rgba(102, 126, 234, 0.3);
+            border: 2px solid rgba(0, 0, 0, 0.2);
             border-radius: 8px;
             cursor: pointer;
             perspective: 1000px;
@@ -139,7 +140,7 @@
         }
 
         .memory-box .front {
-            background: linear-gradient(135deg, #fad6d6 0%, #f0e6e6 100%);
+            background: linear-gradient(135deg, #e0e0e0 0%, #c0c0c0 100%);
         }
 
         .memory-box .back {
@@ -164,13 +165,13 @@
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #333 0%, #000 100%);
             color: white;
         }
 
         .btn-primary:hover {
             transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
         }
 
         .btn-secondary {
@@ -267,7 +268,7 @@
 
         .modal input[type="text"]:focus {
             outline: none;
-            border-color: #667eea;
+            border-color: #333;
         }
 
         .modal-buttons {
@@ -308,7 +309,7 @@
         }
 
         .leaderboard-table th {
-            background: #667eea;
+            background: #333;
             color: white;
         }
 
@@ -379,7 +380,7 @@
         }
 
         input:checked + .toggle-slider {
-            background-color: #667eea;
+            background-color: #333;
         }
 
         input:checked + .toggle-slider:before {
@@ -504,12 +505,12 @@
         }
 
         .difficulty-btn:hover {
-            border-color: #667eea;
+            border-color: #333;
         }
 
         .difficulty-btn.selected {
-            border-color: #667eea;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-color: #333;
+            background: linear-gradient(135deg, #333 0%, #000 100%);
             color: white;
         }
 

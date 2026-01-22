@@ -166,9 +166,9 @@ function toggleLeaderboardVisibility() {
 function updateGameTitle() {
     const title = document.getElementById('gameTitle');
     if (settings.emojiMode) {
-        title.textContent = 'Juego de Emparejar Emoticonos';
+        title.textContent = 'Juego de Emparejar Emoticonos para guardias';
     } else {
-        title.textContent = 'Juego de Emparejar Colores';
+        title.textContent = 'Juego de Emparejar Colores para guardias';
     }
 }
 

@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Juego de Emparejar</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 15px 20px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+            color: #333;
+        }
+
+        .settings-btn {
+            background: none;
+            border: none;
+            font-size: 1.8rem;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 50%;
+            transition: all 0.3s;
+            color: #666;
+        }
+
+        .settings-btn:hover {
+            background: #f0f0f0;
+            transform: rotate(90deg);
+        }
+
+        /* Game area */
+        .game-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 16px;
+            padding: 25px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+        }
+
+        .game-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .game-info span {
+            font-weight: 600;
+            color: #444;
+        }
+
+        .player-name {
+            color: #667eea;
+        }
+
+        /* Grid */
+        .game-grid {
+            display: grid;
+            gap: 10px;
+            justify-content: center;
+            margin: 20px 0;
+        }
+
+        /* Memory box */
+        .memory-box {
+            display: inline-block;
+            width: 80px;
+            height: 80px;
+            border: 2px solid rgba(102, 126, 234, 0.3);
+            border-radius: 8px;
+            cursor: pointer;
+            perspective: 1000px;
+        }
+
+        @media screen and (max-width: 600px) {
+            .memory-box {
+                width: 60px;
+                height: 60px;
+            }
+        }
+
+        .memory-box.disabled {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        .memory-box .content {
+            width: 100%;
+            height: 100%;
+            transform-style: preserve-3d;
+            transition: transform 0.6s;
+            position: relative;
+        }
+
+        .memory-box.disabled .content,
+        .memory-box.active .content {
+            transform: rotateY(180deg);
+        }
+
+        .memory-box .front,
+        .memory-box .back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 6px;
+        }
+
+        .memory-box .front {
+            background: linear-gradient(135deg, #fad6d6 0%, #f0e6e6 100%);
+        }
+
+        .memory-box .back {
+            transform: rotateY(180deg);
+        }
+
+        .memory-box.disabled .back {
+            background-color: #d4edda !important;
+            border: 2px solid #28a745;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin: 5px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+        }
+
+        .buttons-container {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        /* Matched colors legend */
+        .matched-colors {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+            margin-top: 15px;
+            padding: 10px;
+            background: #e9ecef;
+            border-radius: 8px;
+        }
+
+        .matched-color-box {
+            width: 30px;
+            height: 30px;
+            border-radius: 4px;
+            border: 2px solid #28a745;
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal {
+            background: white;
+            padding: 30px;
+            border-radius: 16px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal h2 {
+            margin-bottom: 20px;
+            color: #333;
+            text-align: center;
+        }
+
+        .modal input[type="text"] {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            margin-bottom: 15px;
+            transition: border-color 0.3s;
+        }
+
+        .modal input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Leaderboard */
+        .leaderboard {
+            margin-top: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .leaderboard h3 {
+            margin-bottom: 15px;
+            color: #333;
+            text-align: center;
+        }
+
+        .leaderboard-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .leaderboard-table th,
+        .leaderboard-table td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .leaderboard-table th {
+            background: #667eea;
+            color: white;
+        }
+
+        .leaderboard-table tr:hover {
+            background: #e9ecef;
+        }
+
+        .leaderboard-empty {
+            text-align: center;
+            color: #666;
+            padding: 20px;
+        }
+
+        /* Admin panel */
+        .admin-panel h3 {
+            margin-bottom: 20px;
+        }
+
+        .admin-option {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .admin-option label {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 50px;
+            height: 26px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: 0.4s;
+            border-radius: 26px;
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: 0.4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .toggle-slider {
+            background-color: #667eea;
+        }
+
+        input:checked + .toggle-slider:before {
+            transform: translateX(24px);
+        }
+
+        /* Win animation */
+        @keyframes celebrate {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .celebrate {
+            animation: celebrate 0.5s ease-in-out 3;
+        }
+
+        /* Returning player message */
+        .returning-message {
+            background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            text-align: center;
+            color: #155724;
+        }
+
+        /* Timer */
+        .timer-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 15px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .timer-display {
+            font-size: 2rem;
+            font-weight: bold;
+            font-family: 'Courier New', monospace;
+            color: #333;
+            min-width: 80px;
+            text-align: center;
+        }
+
+        .timer-display.warning {
+            color: #ffc107;
+            animation: pulse 1s infinite;
+        }
+
+        .timer-display.danger {
+            color: #dc3545;
+            animation: pulse 0.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .timer-label {
+            font-size: 0.9rem;
+            color: #666;
+            text-transform: uppercase;
+        }
+
+        .timer-bar {
+            width: 100%;
+            height: 8px;
+            background: #e9ecef;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        .timer-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #28a745, #20c997);
+            transition: width 1s linear;
+            border-radius: 4px;
+        }
+
+        .timer-bar-fill.warning {
+            background: linear-gradient(90deg, #ffc107, #fd7e14);
+        }
+
+        .timer-bar-fill.danger {
+            background: linear-gradient(90deg, #dc3545, #e83e8c);
+        }
+
+        /* Difficulty selector */
+        .difficulty-selector {
+            margin: 20px 0;
+        }
+
+        .difficulty-selector label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .difficulty-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .difficulty-btn {
+            padding: 12px 24px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            background: white;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            flex: 1;
+            max-width: 120px;
+        }
+
+        .difficulty-btn:hover {
+            border-color: #667eea;
+        }
+
+        .difficulty-btn.selected {
+            border-color: #667eea;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .difficulty-btn.easy {
+            border-color: #28a745;
+        }
+
+        .difficulty-btn.easy.selected {
+            background: #28a745;
+        }
+
+        .difficulty-btn.medium {
+            border-color: #ffc107;
+        }
+
+        .difficulty-btn.medium.selected {
+            background: #ffc107;
+            color: #333;
+        }
+
+        .difficulty-btn.hard {
+            border-color: #dc3545;
+        }
+
+        .difficulty-btn.hard.selected {
+            background: #dc3545;
+        }
+
+        .difficulty-info {
+            margin-top: 15px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        /* Game over styling */
+        .game-over-icon {
+            font-size: 4rem;
+            margin-bottom: 15px;
+        }
+
+        .time-up {
+            color: #dc3545;
+        }
+
+        /* Emoji mode */
+        .memory-box .back.emoji-back {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            background: linear-gradient(135deg, #fff9c4 0%, #fff59d 100%);
+        }
+
+        @media screen and (max-width: 600px) {
+            .memory-box .back.emoji-back {
+                font-size: 1.8rem;
+            }
+        }
+
+        .memory-box.disabled .back.emoji-back {
+            background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%) !important;
+        }
+
+        /* Matched items (colors and emojis) */
+        .matched-item {
+            width: 30px;
+            height: 30px;
+            border-radius: 4px;
+            border: 2px solid #28a745;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .matched-item.emoji {
+            font-size: 1.2rem;
+            background: #fff9c4;
+        }
+
+        /* Admin section title */
+        .admin-section-title {
+            font-size: 0.9rem;
+            color: #666;
+            margin: 20px 0 10px 0;
+            padding-bottom: 5px;
+            border-bottom: 1px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 id="gameTitle">Juego de Emparejar Colores</h1>
+            <button class="settings-btn" id="settingsBtn" title="Administracion">&#9881;</button>
+        </div>
+
+        <div class="game-container">
+            <div class="game-info">
+                <span>Jugador: <span class="player-name" id="playerName">-</span></span>
+                <span>Nivel: <span id="levelDisplay">1</span></span>
+                <span>Dificultad: <span id="difficultyDisplay">-</span></span>
+                <span>Progreso: <span id="progressDisplay">0%</span></span>
+                <span>Victorias: <span id="winsDisplay">0</span></span>
+            </div>
+
+            <div class="timer-container">
+                <span class="timer-label">Tiempo</span>
+                <span class="timer-display" id="timerDisplay">00:00</span>
+                <div class="timer-bar">
+                    <div class="timer-bar-fill" id="timerBarFill" style="width: 100%;"></div>
+                </div>
+            </div>
+
+            <div class="game-grid" id="gameGrid"></div>
+
+            <div class="matched-colors" id="matchedColors"></div>
+
+            <div class="buttons-container">
+                <button class="btn btn-secondary" id="restartBtn">Reiniciar Nivel</button>
+                <button class="btn btn-primary" id="changePlayerBtn">Cambiar Jugador</button>
+            </div>
+
+            <div class="leaderboard" id="leaderboardSection">
+                <h3>Tabla de Clasificacion</h3>
+                <table class="leaderboard-table" id="leaderboardTable">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Jugador</th>
+                            <th>Victorias</th>
+                            <th>Mejor Nivel</th>
+                        </tr>
+                    </thead>
+                    <tbody id="leaderboardBody"></tbody>
+                </table>
+                <p class="leaderboard-empty hidden" id="leaderboardEmpty">No hay registros todavia</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Nombre del jugador -->
+    <div class="modal-overlay" id="playerModal">
+        <div class="modal">
+            <h2>Bienvenido al Juego</h2>
+            <div id="returningPlayerMsg" class="returning-message hidden"></div>
+            <input type="text" id="playerInput" placeholder="Introduce tu nombre..." maxlength="20">
+
+            <div class="difficulty-selector">
+                <label>Selecciona la dificultad:</label>
+                <div class="difficulty-buttons">
+                    <button class="difficulty-btn easy" data-difficulty="easy">Facil</button>
+                    <button class="difficulty-btn medium selected" data-difficulty="medium">Medio</button>
+                    <button class="difficulty-btn hard" data-difficulty="hard">Dificil</button>
+                </div>
+                <div class="difficulty-info" id="difficultyInfo">
+                    Tiempo moderado para completar cada nivel
+                </div>
+            </div>
+
+            <div class="modal-buttons">
+                <button class="btn btn-primary" id="startGameBtn">Comenzar Juego</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Fin de nivel/juego -->
+    <div class="modal-overlay hidden" id="winModal">
+        <div class="modal">
+            <h2 id="winTitle">Nivel Completado!</h2>
+            <p id="winMessage" style="text-align: center; margin-bottom: 20px;"></p>
+            <div class="modal-buttons">
+                <button class="btn btn-success" id="nextLevelBtn">Siguiente Nivel</button>
+                <button class="btn btn-secondary" id="continuePlayerBtn">Seguir con este Jugador</button>
+                <button class="btn btn-primary" id="newPlayerBtn">Nuevo Jugador</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Administracion -->
+    <div class="modal-overlay hidden" id="adminModal">
+        <div class="modal admin-panel">
+            <h2>Administracion</h2>
+
+            <p class="admin-section-title">Modo de juego</p>
+
+            <div class="admin-option">
+                <label for="emojiModeToggle">Jugar con Emoticonos</label>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="emojiModeToggle">
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+
+            <p class="admin-section-title">Opciones de pantalla</p>
+
+            <div class="admin-option">
+                <label for="leaderboardToggle">Mostrar Tabla de Clasificacion</label>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="leaderboardToggle" checked>
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+
+            <p class="admin-section-title">Datos</p>
+
+            <div class="admin-option">
+                <label>Borrar todo el historial</label>
+                <button class="btn btn-danger" id="clearHistoryBtn">Borrar Historial</button>
+            </div>
+
+            <div class="modal-buttons" style="margin-top: 20px;">
+                <button class="btn btn-secondary" id="closeAdminBtn">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Confirmar borrado -->
+    <div class="modal-overlay hidden" id="confirmModal">
+        <div class="modal">
+            <h2>Confirmar Borrado</h2>
+            <p style="text-align: center; margin-bottom: 20px;">Estas seguro de que quieres borrar todo el historial? Esta accion no se puede deshacer.</p>
+            <div class="modal-buttons">
+                <button class="btn btn-danger" id="confirmDeleteBtn">Si, Borrar</button>
+                <button class="btn btn-secondary" id="cancelDeleteBtn">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Tiempo agotado -->
+    <div class="modal-overlay hidden" id="gameOverModal">
+        <div class="modal">
+            <div class="game-over-icon time-up">&#9201;</div>
+            <h2 id="gameOverTitle">Tiempo Agotado!</h2>
+            <p id="gameOverMessage" style="text-align: center; margin-bottom: 20px;"></p>
+            <div class="modal-buttons">
+                <button class="btn btn-primary" id="retryLevelBtn">Reintentar Nivel</button>
+                <button class="btn btn-secondary" id="gameOverNewPlayerBtn">Nuevo Jugador</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="game.js"></script>
+</body>
+</html>
